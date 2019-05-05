@@ -1,5 +1,6 @@
 import pandas as pd
 from filter_class import FilterEmail
+from mail_box import MailBox
 # Import For gui
 from tkinter import Tk, N, S, W, E, END, Text, BOTH, StringVar
 from tkinter.ttk import Frame, Button, Entry, Style, Label
@@ -17,10 +18,9 @@ class GUI(Frame):
         self.login_frame = Frame()
         self.system_frame = Frame()
 
-        # self.init_information()
-        self.load_main_UI()
-        self.filter = FilterEmail()
+        self.init_information()
 
+        self.filter = FilterEmail()
 
     def init_information(self):
         self.infomation_frame.master.title("Email filter app")
@@ -85,13 +85,12 @@ class GUI(Frame):
         self.login_frame.pack(fill=BOTH, expand=1)
 
     def login(self):
-        print(self.account.get())
         account = self.account.get()
         password = self.password.get()
-        # if (account == ACCOUNT and password == PASSWORD):
-        self.login_frame.destroy()
-        self.load_main_UI()
-        self.refresh_boxes()
+        if (account == ACCOUNT and password == PASSWORD):
+            self.login_frame.destroy()
+            self.load_main_UI()
+            self.refresh_boxes()
 
     def load_main_UI(self):
         self.emails = pd.read_csv('emails.csv', header=0)
@@ -149,7 +148,6 @@ class GUI(Frame):
         self.label_result_check_mail.grid(row=3, column=4)
         self.result_check_mail.grid(row=3, column=5)
 
-
         self.label_mail_boxes = Label(self.system_frame, text="Mail boxes:")
         self.label_spam_list= Label(self.system_frame, text="Spam box:")
         self.label_inbox_list= Label(self.system_frame, text="Inbox:")
@@ -164,34 +162,16 @@ class GUI(Frame):
 
         self.system_frame.pack(fill=BOTH, expand=1)
 
-
-
     def refresh_boxes(self):
-        print("refresh")
-        self.init_spam_boxes
-        self.init_inboxes
+        mail_box = MailBox()
 
+        self.list_spam_box.delete('1.0', END)
+        self.list_inbox.delete('1.0', END)
 
-
-    def init_spam_boxes(self):
-        print("init spams box")
-        # spams = pd.read_csv('spams.csv', header=0)
-        # self.list_spam_box.delete('1.0', END)
-        #
-        # output_text = ""
-        # output_text += "{}".format(spams)
-        # self.list_spam_box.insert(END, output_text)
-
-
-    def init_inboxes(self):
-        print("init inboxes box")
-        # hams = pd.read_csv('hams.csv', header=0)
-        # self.list_inbox.delete('1.0', END)
-        #
-        # output_text = ""
-        # output_text += "{}".format(hams)
-        # self.list_inbox.insert(END, output_text)
-
+        list_spams = mail_box.get_spams()
+        list_hams = mail_box.get_hams()
+        self.list_spam_box.insert(END, list_spams)
+        self.list_inbox.insert(END, list_hams)
 
     def read_email(self):
         result_log = self.filter.initialize_emails_and_data()
@@ -217,19 +197,8 @@ class GUI(Frame):
             self.write_data_hams([self.emails['text'][email_id]])
 
         self.set_email_type(email_type)
-        spams = pd.read_csv('spams.csv', header=0)
-        self.list_spam_box.delete('1.0', END)
 
-        output_text = ""
-        output_text += "{}".format(spams)
-        self.list_spam_box.insert(END, output_text)
-
-        hams = pd.read_csv('hams.csv', header=0)
-        self.list_inbox.delete('1.0', END)
-
-        output_text = ""
-        output_text += "{}".format(hams)
-        self.list_inbox.insert(END, output_text)
+        self.refresh_boxes()
 
     def set_email_content(self, content):
         self.email_content.delete("1.0", END)
